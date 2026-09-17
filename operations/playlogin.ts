@@ -1,17 +1,23 @@
-import { Page, Locator , expect} from '@playwright/test';
-import {play_Data} from '../testdata/playdata'
+import { Page, Locator, expect } from '@playwright/test';
+import { play_Data } from '../testdata/playdata'
+import * as fs from 'fs';
 const playData = new play_Data();
-export class Play{
+const timestamp = new Date().toLocaleString('en-GB').replace(/[/:, ]/g, '_');
+const fs = require('fs');
+
+
+
+export class Play {
     //Locators
     readonly page: Page;
     // readonly locator: Locator
     readonly loginId: Locator;
     readonly password: Locator;
     readonly loginButton: Locator
-    readonly process_tab : Locator
-    readonly process_tab_ttl : Locator
-    readonly addnew : Locator
-     constructor(page: Page) {
+    readonly process_tab: Locator
+    readonly process_tab_ttl: Locator
+    readonly addnew: Locator
+    constructor(page: Page) {
         this.page = page;
         // this.locator = locator;
         // this.locator = Locator
@@ -22,22 +28,32 @@ export class Play{
         // .getByTitle("Process", {exact: true})
 
         this.process_tab_ttl = page.locator(".chtl_primary")
-        this.addnew= page.getByText("Add New")
+        this.addnew = page.getByText("Add New")
+        // const timestamp = new Date().toLocaleString('en-GB').replace(/[/:, ]/g, '_');
+
     }
-    async login(){
-        await this.page.goto(playData.url)
-        await this.loginId.fill(playData.login_details.login_id)
-        await this.password.fill(playData.login_details.password)
-        await this.loginButton.nth(3).click()
-        await expect(this.page).toHaveTitle(playData.page_validation.title)
+    async login() {
+        try {
+            await this.page.goto(playData.url)
+            await this.loginId.fill(playData.login_details.login_id)
+            await this.password.fill(playData.login_details.password)
+            await this.loginButton.nth(3).click()
+            await expect(this.page).toHaveTitle(playData.page_validation.title)
+        }
+        catch (error) {
+            console.error("Error during login:", error)
+            await this.page.screenshot({
+                path: `screenshots/Login fail_${timestamp}.png`
+            })
+        }
     }
-    async process_list_nav(){
+    async process_list_nav() {
         await this.process_tab.click()
         await expect(this.page).toHaveURL(playData.page_validation.process_tab)
         await expect(this.process_tab_ttl).toBeVisible()
         await expect(this.process_tab_ttl).toHaveText("Process")
     }
-    async manual_process_add(){
+    async manual_process_add() {
         await this.addnew.click()
         await expect(this.process_tab_ttl).toHaveText(playData.page_validation.add_process_ttl)
 
